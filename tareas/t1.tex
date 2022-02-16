@@ -14,48 +14,16 @@
 \cfoot{\thepage\ de \pageref{LastPage}}
 \setlength{\parindent}{0em}
 
+Usando un Notebook de \href{https://colab.research.google.com/}{Google Colab} realice lo siguiente:
 
 \begin{enumerate}
-    \item Usando el estándar \href{http://integrated.cc/cse/Instrumentation_Symbols_and_Identification.pdf}{ANSI/ISA-5.1-2009} realice un diagrama que describa de mejor manera el proceso de medición descrito. El diagrama básico de conexión debe ser como el mostrado en la Figura \ref{fig:while}. El resto del diagrama debe realizarlo en base a ANSI/ISA-5.1-2009
+    \item Replique el algoritmo mostrado en la Figura \ref{fig:while} usando Python. Imprima en la terminal el valor de X Y 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=10cm]{fig}
-        \caption{Medición de corriente y voltaje en un circuito.}
+        \includegraphics[width=10cm]{fig/t1.1.png}
         \label{fig:while}
     \end{figure}
-    
-    \begin{table}[H]
-        \centering
-        \caption{Mediciones tomadas a una frecuencia de \SI{1}{\hertz}}
-        \vspace{0.5cm}
-        \begin{tabular}{ccc}%
-        \toprule
-        \bfseries tiempo & \bfseries corriente & \bfseries voltaje \\
-        {[\si{\second}]} & [\si{\ampere}] & [\si{\volt}]\\
-        %\[\si{\second}\] & \[\si{\ampere}\] & \[\si{\volt}\] \\
-        \midrule
-        \csvreader[
-            late after line=\\,
-            late after last line=,
-            before reading={\catcode`\#=12},
-            after reading={\catcode`\#=6}]%
-            {data.csv}{1=\time1,2=\current1,3=\voltage1}{\time1 &\current1 & \voltage1}\\
-            \bottomrule
-        \end{tabular}
-        \label{tab:datos}
-    \end{table}
 
-    \item Se realizó una medición por segundo durante 20 segundos usando el proceso de medición descrito y se obtuvieron los datos mostrados en la Tabla \ref{tab:datos}. Calcule el valor de $R_sh$ para cada uno de los $n$ puntos de datos y realice una tabla que incluya las tres columnas de la Tabla \ref{tab:datos} y una tercera columna para los valores de $R_{sh}$.
-    \item Para el conjunto de valores de $R_{sh}$, calcule lo siguiente e incluya en una tabla:
-    \begin{enumerate}
-        \item El valor promedio, $\overline{R_{sh}}$ 
-        \item La desviación estándar, $\sigma$
-        \item El valor promedio de error relativo tomando \SI{1}{\ohm} como valor real
-        \item El valor de la incertidumbre estándar, $\sigma_x = \sigma / \sqrt{n}$
-        \item La exactitud
-        \item La precisión
-        \item La repetibilidad
-    \end{enumerate}
 
 \end{enumerate}
 
