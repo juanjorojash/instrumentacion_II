@@ -21,6 +21,7 @@
 
 \documentclass[12pt,letterpaper]{report}
 \input{comunes/preamble}
+\usepackage{listofitems}
 \usepackage{csvsimple}
 \usepackage{geometry} 
 \geometry{left=18mm,right=18mm,top=21mm,bottom=21mm,headheight=15pt}
@@ -59,12 +60,12 @@
 \end{center}
 \end{figure}
 \vspace*{0.4in}
-\begin{Large}
+\begin{Huge}
 Escuela de Física\\
 \vspace*{0.15in}
 Ingeniería Física\\
 \vspace*{0.8in}
-\end{Large}
+\end{Huge}
 \vspace*{0.2in}
 \begin{Large}
 \textbf{Instructivo de Prácticas} \\
@@ -76,7 +77,7 @@ Instrumentación II\\
 \vspace*{2.5in}
 \begin{Large}
 \textbf{\today}\\
-Versión: 0.1\\
+Versión: 0.2\\
 \end{Large}
 \rule{80mm}{0.1mm}\\
 \vspace*{0.1in}
@@ -95,19 +96,20 @@ Realizado por: Juan J. Rojas\\
 \begin{itemize}
 \item Implementar un instrumento virtual básico.
 \item Implementar una interfaz de usuario básica.
-\item Utilizar sensores para medir corriente y voltaje.
+\item Utilizar un DAQ para medir corriente y voltaje.
 \end{itemize}
 
 \section{\mat}
 \textbf{A suministrar por la Escuela:}
 \begin{itemize}
-\item 1 Dispositivo de adquisición de datos NI myDAQ
-\item 1 fuente de corriente continua
-\item 1 breadboard
+\item 1 dispositivo de adquisición de datos NI myDAQ
+
 \end{itemize}
 \textbf{A suministrar por el estudiante:}
 \begin{itemize}
-\item 1 resistor de \SI{15}{\ohm} (\SI{2}{\watt})
+\item 1 breadboard
+\item 1 potenciometro de \SI{5}{\kilo\ohm}
+\item 1 resistor de \SI{220}{\ohm} y \SI{0.25}{\watt}
 \item Cables de interconexión (jumpers) macho-macho
 \end{itemize}
 
@@ -115,382 +117,443 @@ Realizado por: Juan J. Rojas\\
 \section{\pro}
 \begin{enumerate}
 \item Realice las conexiones del circuito tal y como se indica en la Figura \ref{fig:L1F1}.
-\item Encienda la interfaz ScienceWorshop\,\textregistered\,750 y realice la configuración en Capstone
-\item Configure la toma de datos a una frecuencia de \SI{1}{\hertz}, condición de inicio: ninguna, condición de parada: basada en el tiempo (\SI{21}{\second}) 
-\item Encienda la fuente y colóquela en \SI{0.1}{\volt}
-
 \begin{figure}[H]
     \centering
     \begin{circuitikz} 
         \draw
-        (0,0) 	
-            to[V, l=$V_f$] 
-        (0,4)
-        	to[short] 
-        (3,4)
-        	to[rmeter, t=A]
-        (3,2) 
-            to[R, l=$R_{sh}$]
-        (3,0)-- (0,0)
-        (3,4) -- (5,4)
-            to[rmeter, t=V] 
-        (5,0) -- (3,0)
+        (5.5,3) node[ground]{}
+            to[V] 
+        (5.5,6) node[above]{$+$\SI{15}{\volt}} 
+            --
+        (3,6)
+        	to[american potentiometer,n=mypot, l_=0$\sim$\SI{5}{\kilo\ohm},i=$i$]
+        (3,3) 
+        %(mypot.wiper) to[short,-o] ++(2,0)
+        (3,3)
+            to[R, l_=\SI{200}{\ohm}, v^=$v$]
+        (3,0)
+            --
+        (3,-0.5)
+            --
+        (5.5,-0.5) node[ground]{}node[above]{AGND}
+        ;
+        \draw 
+        (5.5,1.5) node[op amp, noinv input up](opamp){AI0}
+        (opamp.+) --++ (-0.5,0) --++ (0,0.7) to[short,-*]++ (-0.8,0)
+        (opamp.-) --++ (-0.5,0) --++ (0,-0.7) to[short,-*]++ (-0.8,0)
         ;
         \draw[dashed,blue]
-        (2,3.8) -- (4,3.8) -- (4,0.2) -- (2,0.2) -- (2,3.8);
+        (4,8) -- (7,8)node[midway, below]{myDAQ} -- (7,-1.5) -- (4,-1.5) -- (4,8);
     \end{circuitikz}
     \caption{Medición de corriente y voltaje en un circuito.}
     \label{fig:L1F1}
 \end{figure}
-
-
-Reportar exactitud usando los datos del fabricante disponibles \href{https://www.ni.com/pdf/manuals/373061g.pdf}{acá}
-
-\item Inicie la toma de datos y proceda a incrementar el valor del voltaje poco a poco de forma que a los 10 segundos no haya sobrepasado los \SI{0.9}{\ampere} luego baje lentamente de hasta llegar a \SI{0.1}{\volt}
-\item Repita la medición tres veces siguiendo el mismo procedimiento, tome en cuenta que los resultados no tienen que ser iguales, complete la Tabla \ref{tab:L1T1}
-\item Calcule indirectamente (Ley de Ohm) para cada caso el valor de $R_{sh}$.
-\item Realice otra tabla con los valores de $R_{sh}$ para cada corrida y grafique los resultados obtenidos.
-\item Para el conjunto de valores de $R_{sh}$, calcule lo siguiente e incluya en una tabla:
+\item Cree un instrumento virtual (\emph{.vi}) que realice lo siguiente:
     \begin{itemize}
-        \item El valor promedio, $\overline{R_{sh}}$ 
-        \item La desviación estándar, $\sigma$
-        \item El valor promedio de error relativo tomando \SI{1}{\ohm} como valor real
-        \item El valor de la incertidumbre estándar, $\sigma_x = \sigma / \sqrt{n}$
-        \item La exactitud
-        \item La precisión
-        \item La repetibilidad
+        \item Leer en un While 100 muestras del valor de AI0 durante \SI{100}{\milli\second} y las promedie
+        \item Calcular el valor promedio de las muestras obtenidas $v$ cada \SI{100}{\milli\second} y lo muestre en un gráfica en el panel frontal
+        \item Calcular el valor promedio de las muestras obtenidas $i$ cada \SI{100}{\milli\second} y lo muestre en un gráfica en el panel frontal
+        \item Iniciar la gráfica vacía. 
+        \item Detener la toma de datos después de \SI{10}{\second}
     \end{itemize}
-    
-\item Tome en cuenta lo siguiente:
+\item Una vez realizado el instrumento virtual córralo, modifique de forma aleatoria el valor del potenciometro y guarde los datos de las gráficas como archivos \emph{.csv}.
+\item Incluya en su informe lo siguiente:
     \begin{itemize}
-        \item La exactitud se calculará como el mayor error relativo obtenido en cualquier punto de de datos en todas las corridas de medición, en este caso solo hay una corrida.
-        \item La precisión se calculará como la mayor desviación estándar entre todas las corridas de medición, en este caso solo hay una corrida.
-        \item La repetibilidad se calculará de la siguiente manera:
-        \begin{equation*}
-            \mathrm{repetibilidad} = \sqrt{\dfrac{\sum_{i=1}^n(\mathrm{error\,absoluto})^2}{n}}
-        \end{equation*}
+        \item Una captura de pantalla del diagrama de bloques
+        \item Una captura de pantalla del panel frontal
+        \item Una gráfica de $i$ realizada a partir del archivo \emph{.csv}, usando Python. Incluya los títulos de los ejes de forma adecuada. 
+        \item Una gráfica de $v$ realizada a partir del archivo \emph{.csv}, usando Python. Incluya los títulos de los ejes de forma adecuada. 
     \end{itemize}
-
-\begin{table}[H]
-    \centering
-    \caption{Mediciones tomadas a una frecuencia de \SI{1}{\hertz}}
-    \vspace{0.5cm}
-    \begin{tabular}{ccccccc}%
-    \toprule
-    \bfseries &  \multicolumn{2}{c}{\textbf{corrida 1}} & \multicolumn{2}{c}{\textbf{corrida 2}} & \multicolumn{2}{c}{\textbf{corrida 3}}\\
-    \bfseries tiempo & \bfseries corriente & \bfseries voltaje & \bfseries corriente & \bfseries voltaje & \bfseries corriente & \bfseries voltaje\\
-    {[\si{\second}]} & [\si{\ampere}] & [\si{\volt}] & [\si{\ampere}] & [\si{\volt}] & [\si{\ampere}] & [\si{\volt}]\\
-    \midrule
-    \csvreader[
-        late after line=\\,
-        late after last line=,
-        before reading={\catcode`\#=12},
-        after reading={\catcode`\#=6}]%
-        {data.csv}{1=\t,2=\ci,3=\vi,4=\cii,5=\vii,6=\ciii,7=\viii}{\t &\ci & \vi &\cii & \vii &\ciii & \viii}\\
-        \bottomrule
-    \end{tabular}
-    \label{tab:L1T1}
-\end{table}
 \end{enumerate}
 
-% %	Mediciones de temperatura
-% %----------------------------------------------------------------------------------------
+\chapter{Estructuras de datos}
+\section{\obj}
+\capacidad
+\begin{itemize}
+\item Comprender las diferentes estructuras de datos.
+\item Realizar mediciones en mas de un canal al mismo tiempo.
+\end{itemize}
+
+\section{\mat}
+\textbf{A suministrar por la Escuela:}
+\begin{itemize}
+\item 1 dispositivo de adquisición de datos NI myDAQ
+\item 1 interruptor rotativo de 16 posiciones 
+
+\end{itemize}
+\textbf{A suministrar por el estudiante:}
+\begin{itemize}
+\item 1 breadboard
+\item Cables de interconexión (jumpers) macho-macho
+\end{itemize}
+
+\section{\pro}
+\begin{enumerate}
+\item Realice las conexiones del circuito tal y como se indica en la Figura \ref{fig:L2F1}.
+
+\item Cree un instrumento virtual (\emph{.vi}) que realice lo siguiente:
+    \begin{itemize}
+        \item Leer en un While 1 muestra del valor de las entradas DIO0, DIO1, DIO2 y DIO3 cada \SI{500}{\milli\second} y mostrarla como una matriz de booleano
+        \item Convertir el valor binario obtenido en un numero entero y mostrarlo en el panel frontal
+        \item Dividir el numero entero obtenido entre el valor máximo (15) y mostrar el valor en un "Slide"
+        \item Convertir el numero entero obtenido en una cadena hexadecimal
+        \item Mostrar un mensaje en el panel frontal que diga ``El selector está en XX'' donde XX es la cadena hexadecimal obtenida. 
+        \item Guardar la cadena hexadecimal obtenida en una matriz cada vez que exista un cambio de valor
+    \end{itemize}
+\begin{figure}[H]
+    \tikzset{demux/.style={muxdemux, muxdemux def={Lh=4, Rh=3, NL=4, NB=0, NR=1, w=2}}}
+    \tikzset{switch16/.style={muxdemux, muxdemux def={Lh=3, Rh=3, NL=3, NB=0, NR=3, w=2}}}
+    \centering
+    \begin{circuitikz} 
+        \draw (0,0) node[demux] (m){\rotatebox{90}{\small multiplex}}
+        ;
+        \foreach \i in {0,...,3}
+        {
+            \pgfmathtruncatemacro{\pin}{\i + 1}
+            \draw (m.blpin \pin) node[above left]{\small DI0\i};
+        }
+        \draw (-4,2) node[switch16,rotate=90] (s){\rotatebox{-90}{\small switch}}
+        (s.brpin 3) node[above right]{\small 1}
+        (s.brpin 2) node[above right]{\small C}
+        (s.brpin 1) node[above right]{\small 4}
+        (s.blpin 3) node[below right]{\small 8}
+        (s.blpin 2) node[below right]{\small C}
+        (s.blpin 1) node[below right]{\small 2}
+        ;
+        \draw
+        (0,2) node[ground]{}
+            to[V] 
+        (0,4) node[above]{\SI{5}{\volt}} 
+            --
+        (-3,4)
+            -|
+        (s.brpin 2)
+        ;
+        \draw[red]
+        (m.blpin 1) --++ (-2,0) --++ (0,2.5) -| (s.brpin 3)
+        ;
+        \draw[blue]
+        (m.blpin 2) -| (s.blpin 1)
+        ;
+        \draw[orange]
+        (m.blpin 3) --++ (-5,0) --++ (0,3.5) -| (s.brpin 1)
+        ;
+        \draw[brown]
+        (m.blpin 4) -| (s.blpin 3)
+        ;
+        \draw[dashed,blue]
+        (-1.6,6) -- (1,6)node[midway, below]{myDAQ} -- (1,-1.5) -- (-1.6,-1.5) -- cycle;
+    \end{circuitikz}
+    \caption{Lectura de estados de un interruptor rotativo de 16 posiciones.}
+    \label{fig:L2F1}
+\end{figure}
+\item Una vez realizado el instrumento virtual córralo, realice al menos 10 cambios y guarde los datos de la matriz de cadenas hexadecimales como un archivo de Excel.
+\item Incluya en su informe lo siguiente:
+    \begin{itemize}
+        \item Una captura de pantalla del diagrama de bloques
+        \item Una captura de pantalla del panel frontal
+        \item Una tabla con los valores de las cadenas hexadecimales obtenidas.  
+    \end{itemize}
+\end{enumerate}
+
+Detalle del interruptor rotativo:
+\begin{center}
+    \includegraphics[width=0.3\textwidth]{fig/rotary_switch.jpg}
+\end{center}
+
+\chapter{Estructuras de ejecución}
+\section{\obj}
+\capacidad
+\begin{itemize}
+\item Comprender las diferentes estructuras de ejecución.
+\item Realizar mediciones detenidas programáticamente.
+\end{itemize}
+
+\section{\mat}
+\textbf{A suministrar por la Escuela:}
+\begin{itemize}
+\item 1 dispositivo de adquisición de datos NI myDAQ
+\item 1 termistor TDC310 de \SI{10}{\kilo\ohm} 
+\item 1 resistor de \SI{10}{\kilo\ohm}
+\item 1 capacitor de \SI{0.1}{\micro\farad}
+
+\end{itemize}
+\textbf{A suministrar por el estudiante:}
+\begin{itemize}
+\item 1 breadboard
+\item Cables de interconexión (jumpers) macho-macho
+\end{itemize}
 
 
-% \chapter{Mediciones de Temperatura}
-% \section{\obj}
-% \capacidad
-% \begin{itemize}
-% \item Utilizar sensores para medir temperatura.
-% \item Analizar la relación calor-temperatura.
-% \end{itemize}
+\section{\pro}
+\begin{enumerate}
+\item Realice las conexiones del circuito tal y como se indica en la Figura \ref{fig:L1F1}.
+\item Cree un instrumento virtual (\emph{.vi}) que realice lo siguiente:
+    \begin{itemize}
+        \item Leer en una estructura temporizada 500 muestras del valor de $v$ cada \SI{500}{\milli\second}, sacar el promedio de las muestras y mostrarlo en un indicador.
+        \item Calcular el valor de la resistencia del termistor usando la siguiente ecuación y graficarla en tiempo real en el panel frontal.
+        \begin{equation*}
+            R_T = \dfrac{R}{\frac{5}{v} - 1}
+        \end{equation*}
+        \item Calcular el valor de la temperatura utilizando la siguiente ecuación y graficarlo en tiempo real en el panel frontal.
+        \begin{equation*}
+            T = \dfrac{\beta T_0}{\beta + T_0\ln{\left(\frac{R_T}{R_0}\right)}}
+        \end{equation*}
+        donde $\beta = 4100$, $T_0 = \SI{298.15}{\kelvin}$ y $R_0 = \SI{10}{\kilo\ohm}$
+        \item Guardar los datos tomados en un archivo separado por comas (\emph{.csv}) en \emph{tiempo real}, de forma que la primera columna sea el tiempo y la segunda el valor de la resitencia del termistor y la tercera la temperatura.
+        \item Generar un mensaje de alarma que indique cuando la temperatura sobrepasó los \SI{50}{\degreeCelsius}
+        \item Detener la ejecución luego de \SI{60}{\second}.
+    \end{itemize}
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz} 
+        \draw
+        (5.5,3) node[ground]{}
+            to[V] 
+        (5.5,5) node[above]{\SI{5}{\volt}} 
+            --
+        (3,5)
+        	to[short]
+        (3,3) 
+            to[sR, l_=$R_T$, v^=$v$]
+        (3,0)
+            to[R, l_=$R$]
+        (3,-3)
+            --
+        (5.5,-3) node[ground]{}node[above]{DGND}
+        (3,0)
+            to[short]
+        (1.5,0)
+            to[C, l_=$C$]
+        (1.5,-3)
+            to[short]
+        (3,-3)
+        ;
+        \draw 
+        (5.5,1.5) node[op amp, noinv input up](opamp){AI0}
+        (opamp.+) --++ (-0.5,0) --++ (0,0.7) to[short,-*]++ (-0.8,0)
+        (opamp.-) --++ (-0.5,0) --++ (0,-0.7) to[short,-*]++ (-0.8,0)
+        ;
+        \draw[dashed,blue]
+        (4,7) -- (7,7)node[midway, below]{myDAQ} -- (7,-4) -- (4,-4) -- (4,7);
+        \node at (-3,4) {$R_T=\SI{10}{\kilo\ohm}@\SI{298.15}{\kelvin}$}; 
+        \node at (-3,3.5) {$R=\SI{10}{\kilo\ohm}$}; 
+        \node at (-3,3) {$C=\SI{0.1}{\micro\farad}$}; 
+    \end{circuitikz}
+    \caption{Medición de caída de voltaje en un termistor.}
+    \label{fig:L3F1}
+\end{figure}
 
-% \section{\mat}
-% \begin{itemize}
-% \item 1 interfaz ScienceWorkshop\,\textregistered\,750
-% \item 1 sensor de temperatura, sonda de acero inoxidable CI-6605
-% \item Calorímetro de Transferencia de Energía
-% \item Beaker, 100 ml
-% \item Termómetro
-% \item Plantilla para calentar
-% \end{itemize}
-
-
-% \section{\pro}
-
-% \begin{itemize}
-%     \item Inserte el sensor de temperatura de acero inoxidable CI-6605 en uno de los canales analógicos de la Interfaz 750 de PASCO.
-%     \item Seleccione la Interfaz \textit{ScienceWorkshop} 750 en configuración del hardware en \textit{PASCO Capstone}, asegúrese de que el dispositivo esté encendido.
-%     \item Configure la toma de datos a una frecuencia de \SI{1}{\hertz}, condición de inicio: ninguna, condición de parada: basada en el tiempo (\SI{300 }{\second}) 
-% \end{itemize}
-
-% \subsection{Procedimiento 40 ml}
-
-% \begin{enumerate}
-%     \item Emplee el beaker para medir (\SI{40}{\ml}) de agua, seguidamente utilice la  plantilla para calentar el agua y con el termómetro mida la temperatura hasta sobre pasar los (\SI{24}{\celsius}).
-%     \item Una vez alcanzados los (\SI{24}{\celsius}), vierta el agua en el calorímetro. Remueva el tapón del calorímetro e introduzca el sensor de temperatura CI-6605, para iniciar con la toma de datos. 
-%     \item En el software de interfaz \textit{PASCO Capstone}, presione el botón de Grabar para que se comience a registrar y representar los datos en el gráfico de Temperatura vs Tiempo. Agite el calorímetro suavemente para que el agua se caliente de manera uniforme.
-%     \item Luego de haber transcurrido 180 segundos (3 minutos), vierta (\SI{20}{\ml})  de agua fría en el calorímetro y observe el cambio de los datos en el gráfico de Temperatura Vs Tiempo.
-%     \item Exporte los datos obtenidos en la medición para futuro análisis.
-% \end{enumerate}
-
-% \subsection{Procedimiento 60 ml}
-% \begin{enumerate}
-%     \item Emplee el beaker para medir (\SI{60}{\ml}) de agua, seguidamente utilice la  plantilla para calentar el agua y con el termómetro mida la temperatura hasta sobre pasar los (\SI{24}{\celsius}).
-%     \item Una vez alcanzados los (\SI{24}{\celsius}), vierta el agua en el calorímetro. Remueva el tapón del calorímetro e introduzca el sensor de temperatura CI-6605, para iniciar con la toma de datos. 
-%     \item En el software de interfaz \textit{PASCO Capstone}, presione el botón de Grabar para que se comience a registrar y representar los datos en el gráfico de Temperatura vs Tiempo. Agite el calorímetro suavemente para que el agua se caliente de manera uniforme.
-%     \item Luego de haber transcurrido 180 segundos (3 minutos), vierta (\SI{30}{\ml})  de agua fría en el calorímetro y observe el cambio de los datos en el gráfico de Temperatura Vs Tiempo.
-%     \item Exporte los datos obtenidos en la medición para futuro análisis.
-% \end{enumerate}
-
-% \subsection{Preguntas guia para el análisis}
-% \begin{enumerate}
-%     \item Utilice las herramientas gráficas para determinar el cambio en la temperatura para cada volumen de agua, 40 ml y 60 ml. Anote ambos valores a continuación.
-%     \item ¿Cómo se compara el ΔT de 40 ml de agua con el ΔT de 60 ml de agua?
-%     \item ¿Los 40 ml recibieron más, menos, o la misma cantidad de energía que los 60 ml? ¿Por qué?
-%     \item Considerando su respuesta a la pregunta anterior, ¿por qué la temperatura final de los 40 ml de agua es superior a los 60 ml?
-% \end{enumerate}
-
-% %	Mediciones de presión
-% %----------------------------------------------------------------------------------------
-
-
-% \chapter{Mediciones de Presión}
-% \section{\obj}
-% \capacidad
-% \begin{itemize}
-% \item Utilizar un sensor para medir presión absoluta.
-% \item Analizar la relación fuerza-presión.
-% \end{itemize}
-
-% \section{\mat}
-% \begin{itemize}
-% \item 1 interfaz ScienceWorkshop\,\textregistered\,750
-% \item 1 sensor de presión absoluta, CI-6532A
-% \item 1 sensor de temperatura, sonda de acero inoxidable CI-6605
-% \item Frasco Erlenmeyer de \SI{500}{\milli\liter}
-% \item Tapón para Erlenmeyer con dos orificios
-% \item Mangueras varias
-% \item Jeringa de \SI{60}{\milli\liter}
-% \end{itemize}
-
-
-% \section{\pro}
-% \subsection{Experimento}
-% \begin{itemize}
-%     \item Instale dos mangueras en cada uno de los orificios del tapón.
-%     \item Coloque el tapón con las mangueras en el orificio del frasco Erlenmeyer
-%     \item Acople el sensor de presión absoluta, CI-6532A a una de las mangueras e instale en Interfaz \textit{ScienceWorkshop} 750
-%     \item Extraiga todo el aire de la jeringa \SI{60}{\milli\liter} y luego acóplela en la otra manguera
-%     \item Instale el sensor de temperatura en la Interfaz \textit{ScienceWorkshop} 750 para registrar la temperatura del experimento
-%     \item Seleccione la Interfaz \textit{ScienceWorkshop} 750 en configuración del hardware en \textit{PASCO Capstone}, asegúrese de que el dispositivo esté encendido.
-%     \item Configure la toma de datos a una frecuencia de \SI{10}{\hertz}, condición de inicio: ninguna, condición de parada: basada en el tiempo (\SI{40}{\second})
-%     \item Inicie la toma de datos, espere dos segundos, a continuación succione aire usando la jeringa hasta que llegue a la marca de los \SI{60}{\milli\liter} y luego libere el émbolo.
-%     \item Registre la posición final del émbolo.
-%     \item Repita el procedimiento tres veces y guarde los datos en un archivo \emph{.csv}
-%     \item Realice el siguiente análisis en las tres tomas de datos. 
-% \end{itemize}
-
-
-% \subsection{Análisis}
-% \begin{enumerate}
-%     \item Determine la presión atmosférica local usando el primer segundo de la toma de datos. ¿Es este valor de presión atmosférica local el esperado para la altitud del campus (1407 msnm)?
-%     \item Asuma que tanto el proceso de expansión como el de compresión son procesos isotérmicos. 
-%     \item Usando la ley de gases ideales y el valor de presión atmosférica local como presión inicial, calcule teóricamente la presión final del proceso de expansión asumiendo que el volumen inicial de aire es de \SI{500}{\milli\liter}. Compare con el valor registrado, determine el porcentaje de error y analice.
-%     \item Usando la ley de gases ideales y el valor de presión medido al final del proceso de expansión como presión inicial, calcule teóricamente la presión final del proceso de compresión asumiendo que el volumen inicial de aire es de \SI{560}{\milli\liter}. Compare con el valor registrado, determine el porcentaje de error y analice.
-%     \item Calcule el trabajo realizado en ambos procesos.
-% \end{enumerate}
-
-
-% %	Mediciones de nivel
-% %----------------------------------------------------------------------------------------
-
-
-% \chapter{Mediciones de Nivel mediante la presión hidrostática}
-% \section{\obj}
-% \capacidad
-% \begin{itemize}
-% \item Determinar cómo se relacionada la presión estática con el nivel en una
-% columna de agua.
-% \item Determinar experimentalmente la relación matemática entre la presión
-% estática y el nivel en una columna de agua.
-% \end{itemize}
-
-% \section{\mat}
-% \begin{itemize}
-% \item 1 interfaz ScienceWorkshop\,\textregistered\,750
-% \item 1 sensor de presión absoluta, CI-6532A
-% \item 1 sensor de temperatura, sonda de acero inoxidable CI-6605
-% \item Depósito de agua, transparente, por encima de los 30 cm de altura.
-% \item Regla
-% \item Mangueras varias
-% \end{itemize}
-
-
-% \section{\pro}
-% \subsection{Experimento}
-% \begin{enumerate}
+\item Incluya en su informe lo siguiente:
+    \begin{itemize}
+        \item Una captura de pantalla del diagrama de bloques
+        \item Una captura de pantalla del panel frontal
+        \item Una gráfica de $R_T$ realizada a partir del archivo \emph{.csv}, usando Python. Incluya los títulos de los ejes de forma adecuada. 
+        \item Una gráfica de $T$ realizada a partir del archivo \emph{.csv}, usando Python. Incluya los títulos de los ejes de forma adecuada. 
+    \end{itemize}
     
-%     \item Corte el tubo plástico un 1/4", a una longitud aproximada correspondiente a la altura de la profundidad del depósito de agua, y conecte el tubo a la válvula en el sensor de Presión CI-6532A,usando el conector rápido para ajustarlo al sensor.
-%     \item Cree un nuevo archivo en el software “Pasco Capstone” con gráfico que muestre presión (KPa) en el eje de ordenadas y nivel (cm) en el eje de las abscisas. Además, cree una tabla con las mismas variables. Para ello, seleccione el apartado de Datos del Sensor-> Muestreo Manual.
-%     \item Llene el depósito de agua con agua destilada a 3/4 de la capacidad total.
-%     \item Sostenga el sensor de Presión CI-6532A y mantenga el tubo por encima del nivel de agua en el depósito. Luego, registre la primera medición de presión, correspondiente a un nivel de 0 cm en la tabla. 
-%     \item Sumerja el extremo del final abierto del tubo, proveniente del sensor de Presión PASCO CI-6532A dentro del agua, descienda el extremo final del tubo a un nivel de 4 cm de profundidad. Como se muestra en la Figura \ref{fig:altura}.
-%     \begin{figure} [!ht]
-%         \centering
-%         \includegraphics{fig/Nivel/Altura.PNG}
-%         \caption{Medición de Nivel}
-%         \label{fig:altura}
-%     \end{figure}
-%     \item Registre la presión P (KPa) y el nivel h (cm) como se indica en la tabla No. 1. Además registre la temperatura ambiente. 
-%     \begin{table}[!ht]
-%         \centering
-%         \begin{tabular}{c|c}
-%             \textbf{Nivel[cm]} & \textbf{Presión[kPa]} \\
-%             \hline
-%              0 & \\
-%              4 & \\
-%              8 & \\
-%              12 & \\
-%              16 & \\
-%              20 & \\
-%              24 & \\
-%              28 & \\
-%         \end{tabular}
-%         \caption{Presión vs nivel en una columna de agua}
-%         \label{tab:my_label}
-%     \end{table}
-%     \item Descienda el tubo dentro del agua cuatro centímetros adicionales.
-%     \item Repita el paso anterior hasta que haya registrado presiones para seis niveles: 0 cm, 4 cm, 8 cm, 12 cm, 16 cm y 20 cm.
-%     \item Guarde los datos en un archivo \emph{.csv} y genere el mismo gráfico visto en el software "Pasco Capstone" durante el experimento.
-%     \item Realice el siguiente análisis en las tres tomas de datos.
-% \end{enumerate}
+\end{enumerate}
+
+\chapter{Manejo de archivos y protocolos de comunicación serial}
+\section{\obj}
+\capacidad
+\begin{itemize}
+\item Guardar mediciones en archivos para uso posterior.
+\item Implementar diferentes protocolos de comunicación serial. 
+\end{itemize}
+
+\section{\mat}
+\textbf{A suministrar por la Escuela:}
+\begin{itemize}
+\item 1 dispositivo de adquisición de datos NI myRIO
+\item 1 adaptador para breadboard DIGILENT
+\item 1 modulo lector de termocupla K basado en el integrado \href{https://datasheets.maximintegrated.com/en/ds/MAX31855.pdf}{MAX31855}
+\item 1 display de 7 segmentos y 4 digitos, \href{https://github.com/sparkfun/Serial7SegmentDisplay/wiki/Serial-7-Segment-Display-Datasheet}{COM-11441}
+
+\end{itemize}
+\textbf{A suministrar por el estudiante:}
+\begin{itemize}
+\item Cables de interconexión (jumpers) macho-macho
+\end{itemize}
 
 
-% \subsection{Análisis}
-% \begin{enumerate}
-%     \item Genere la curva de mejor ajuste realizada en el punto i del apartado de procedimiento. Determine y anote la ecuación de la línea.
-%     \item ¿El gráfico de presión versus nivel produce una relación lineal? Explique. 
-%     \item La presión estática está relacionada con el nivel mediante la ecuación:
-%     \begin{equation}
-%         P=P_0+\rho * h * g
-%     \end{equation}
+\section{\pro}
+\begin{enumerate}
+\item Realice las conexiones del circuito tal y como se indica en la Figura \ref{fig:L4F1}.
+\item Cree un instrumento virtual (\emph{.vi}) que realice lo siguiente:
+    \begin{itemize}
+        \item Leer en en un estructura temporizada el valor de la temperatura de la unión fría y la unión caliente ($T$) cada \SI{1000}{\milli\second}, y mostrarlo en un indicador.
+        \item Enviar el valor de unión caliente al display de 7 segmentos cada \SI{1000}{\milli\second}.
+        \item Guardar los datos tomados en un archivo separado por comas (\emph{.csv}) en \emph{tiempo real}, de forma que la primera columna sea el tiempo y la segunda el valor de la temperatura en la unión caliente y la tercera la temperatura en la unión fría.
+        \item Generar un mensaje de alarma que indique cuando la temperatura sobrepasó los \SI{35}{\degreeCelsius}
+        \item Detener la ejecución luego de \SI{60}{\second}.
+    \end{itemize}
+\begin{figure}[H]
+    \tikzset{demux/.style={muxdemux, muxdemux def={Lh=4, Rh=3, NL=3, NB=0, NR=1, w=2}}}
+    \tikzset{MAX31855/.style={muxdemux, muxdemux def={Lh=5, Rh=5, NL=0, NB=0, NR=6, w=2}}}
+    \centering
+    \begin{circuitikz} 
+    \readlist*\myinputs{06, 11, 05}
+        \draw (0,0) node[demux] (m){\rotatebox{90}{\small multiplex}}
+        ;
+        \foreach \i in {1,...,3}
+        {
+            
+            \pgfmathtruncatemacro{\pin}{\i}
+            \draw (m.blpin \pin) node[above left]{\small DI0 \myinputs[\i]};
+        }
+        \draw (-5,-3) node[MAX31855,rotate=90] (s){\rotatebox{-90}{\small MAX31855}}
+        (s.brpin 1) node[above right,rotate=90]{\scriptsize Vin}
+        (s.brpin 2) node[above right,rotate=90]{\scriptsize 3V0}
+        (s.brpin 3) node[above right,rotate=90]{\scriptsize GND}
+        (s.brpin 4) node[above right,rotate=90]{\scriptsize DO}
+        (s.brpin 5) node[above right,rotate=90]{\scriptsize CS}
+        (s.brpin 6) node[above right,rotate=90]{\scriptsize CLK}
+        ;
+        \draw
+        (0,2) node[ground]{}
+            to[V] 
+        (0,4) node[above,xshift=-11mm]{+3.3V} 
+            --
+        (-0.8,4)
+        (0,2) node[above,xshift=-11mm]{GND} 
+            --
+        (-0.8,2)
+        ;
+        \draw[blue]
+        (-0.8,4)
+            -|
+        (s.brpin 2)
+        ;
+        \draw[green]
+        (-0.8,2)
+            -|
+        (s.brpin 3)
+        ;
+        \draw[red]
+        (m.blpin 1) --++ (-2,0) -| (s.brpin 4)
+        ;
+        \draw[yellow]
+        (m.blpin 2) --++ (-2,0) -| (s.brpin 5)
+        ;
+        \draw[brown]
+        (m.blpin 3) --++ (-2,0) -| (s.brpin 6)
+        ;
+        % \draw[blue]
+        % (m.blpin 2) -| (s.blpin 1)
+        % ;
+        \draw[dashed,blue]
+        (-1.9,6) -- (1,6)node[midway, below]{myDAQ} -- (1,-1.5) -- (-1.9,-1.5) -- cycle;
+    \end{circuitikz}
+    \caption{Lectura de estados de un interruptor rotativo de 16 posiciones.}
+    \label{fig:L4F1}
+\end{figure}
+
+\item Incluya en su informe lo siguiente:
+    \begin{itemize}
+        \item Una captura de pantalla del diagrama de bloques
+        \item Una captura de pantalla del panel frontal
+        \item Una gráfica de $T$ realizada a partir del archivo \emph{.csv}, usando Python. Incluya los títulos de los ejes de forma adecuada. 
+    \end{itemize}
     
-%     Donde $P$ es la presión, $P_0$ es la presión inicial, $rho$ es la densidad del fluido, $g$ es la aceleración de la gravedad y $h$ es el nivel/profundidad. A partir del gráfico lineal que relaciona la presión con el nivel, extrapole el valor para la densidad del valor del fluido en el depósito (agua). Muestre su cálculo.
-%     \item Si el valor teórico de la densidad de agua es 1,000 kg/m3, calcule el porcentaje de error entre el valor experimental y el valor actual
-%     \begin{equation}
-%         Porcentaje_{error}=\frac{|Actual-Experimental|}{Actual}\times 100
-%     \end{equation}
-%     \item Si se realiza el mismo experimento utilizando yodo líquido (densidad ≈ 4,900 kg/m3) en lugar de agua, ¿cómo sería diferente un gráfico de presión versus nivel?
-% \end{enumerate}
+\end{enumerate}
 
-% %	Mediciones de nivel
-% %----------------------------------------------------------------------------------------
+\chapter{Máquinas de estados}
+\section{\obj}
+\capacidad
+\begin{itemize}
+\item Crear máquinas de estados para automatizar procesos de medición.
+\end{itemize}
 
+\section{\mat}
+\textbf{A suministrar por la Escuela:}
+\begin{itemize}
+\item 1 dispositivo de adquisición de datos NI myDAQ
+\item 1 termistor TDC310 de \SI{10}{\kilo\ohm} 
+\item 1 resistor de \SI{10}{\kilo\ohm}
+\item 1 capacitor de \SI{0.1}{\micro\farad}
 
-% \chapter{Medición de aceleración}
-% \section{\obj}
-% \capacidad
-% \begin{itemize}
-% \item Medir la aceleración lineal de un cuerpo.
-% \item Determinar la velocidad y la posición a partir de los datos de aceleración
-% \end{itemize}
+\end{itemize}
+\textbf{A suministrar por el estudiante:}
+\begin{itemize}
+\item 1 breadboard
+\item Cables de interconexión (jumpers) macho-macho
+\end{itemize}
 
-% \section{\mat}
-% \begin{itemize}
-% \item 1 interfaz ScienceWorkshop\,\textregistered\,750
-% \item 1 sensor de aceleración, CI-6558
-% \item 1 nivel
-% \item 1 riel para carrito PASCO
-% \item 1 carrito, ME-9439
-% \item 1 pesa pequeña
-% \end{itemize}
+\section{\pro}
+\begin{enumerate}
+\item Realice las conexiones del circuito tal y como se indica en la Figura \ref{fig:L3F1}.
+\item Cree un instrumento virtual (\emph{.vi}) que realice lo siguiente:
+    \begin{itemize}
+        \item Crear una máquina de estados que tenga cuatro estados:
+            \begin{itemize}
+                \item \emph{stand-by}: espera que se presione un botón y pasa al estado \emph{medición}
+                \item \emph{medición}: realiza una medición por segundo por $X$\si{\second} y luego pasa al estado de \emph{espera}
+                \item \emph{espera}: espera $Z$\si{\second} y continua al estado de medición a menos que una cantidad de tomas de datos mayor a $Y$ haya sido realizada, en ese caso continua al estado  \emph{fin}
+                \item \emph{fin}: termina la ejecución del instrumento virtual.
+            \end{itemize}
+        \item Guardar los datos tomados en cada estado \emph{medición} en un archivo separado por comas (\emph{.csv}) en \emph{tiempo real}, de forma que la primera columna sea el tiempo y la segunda el valor de la temperatura. El archivo debe cambiar de nombre para cada estado \emph{medición}. 
+    \end{itemize}
 
-
-% \section{\pro}
-% \subsection{Experimento}
-% \begin{enumerate}
+\item Incluya en su informe lo siguiente:
+    \begin{itemize}
+        \item Una captura de pantalla de cada estado de la máquina 
+        \item Una captura de pantalla del panel frontal
+        \item Una familia de gráficas de $T$ que incluya todos los datos de los archivos (\emph{.csv}) realizada a partir de los archivos \emph{.csv}, usando Python. Incluya los títulos de los ejes de forma adecuada. 
+    \end{itemize}
     
-%     \item Arme el riel y procure que quede a nivel, coloque el limite para el carrito a los 100cm
-%     \item Fije el sensor de aceleración al carrito
-%     \item Conecte el sensor a la interfaz
-%     \item Contraiga la espiga impulsora del carrito y colóquelo en el límite
-%     \item Configure la toma de datos a una frecuencia de 1kHz, condición de inicio: aumenta por encima de 10, condición de parada: cae por debajo de -10 
-%     \item Presione el botón registrar y luego utilice la pesa pequeña para liberar el carrito
-%     \item Repita la toma 3 veces 
-%     \item Guarde los datos en un archivo \emph{.csv}
-%     \item Realice el siguiente análisis en las tres tomas de datos.
-% \end{enumerate}
+\end{enumerate}
 
+\chapter{Instrumentos virtuales modulares}
+\section{\obj}
+\capacidad
+\begin{itemize}
+\item Crear instrumentos virtuales modulares para simplificar la creación, mantenimiento, documentación y automatización de los procesos de medición.
+\end{itemize}
 
-% \subsection{Análisis}
-% \begin{enumerate}
-%     \item Genere los gráficos de aceleración vrs. tiempo, velocidad vrs. tiempo y desplazamiento vrs. tiempo usando los datos de las tomas anteriores
-%     \item ¿Es el comportamiento esperado? Analice.
-%     \item Compare con el desplazamiento real realizado y discuta a que se debe la diferencia. 
-%     \item ¿Porque se produce oscilación en los valores del sensor al inicio de la toma de datos? Explique. 
-% \end{enumerate}
+\section{\mat}
+\textbf{A suministrar por la Escuela:}
+\begin{itemize}
+\item 1 dispositivo de adquisición de datos NI myDAQ
+\item 1 termistor TDC310 de \SI{10}{\kilo\ohm} 
+\item 1 resistor de \SI{10}{\kilo\ohm}
+\item 1 capacitor de \SI{0.1}{\micro\farad}
 
-% \chapter{Medición de óptica}
-% \section{\obj}
-% \capacidad
-% \begin{itemize}
-% \item Comprender el funcionamiento de los sensores ópticos. 
-% \item Estudiar de forma experimental cómo la intensidad de luz cambia con la distancia.
-% \end{itemize}
+\end{itemize}
+\textbf{A suministrar por el estudiante:}
+\begin{itemize}
+\item 1 breadboard
+\item Cables de interconexión (jumpers) macho-macho
+\end{itemize}
 
-% \section{\mat}
-% \begin{itemize}
-% \item 1 interfaz ScienceWorkshop\,\textregistered\,750
-% \item 1 sensor de luz, CI-6504A
-% \item 1 nivel
-% \item 1 riel para carrito PASCO
-% \item 1 carrito, ME-9439
-% \item 1 diodo laser
-% \item Laminas de madera
-% \end{itemize}
+\section{\pro}
+\begin{enumerate}
+\item Realice las conexiones del circuito tal y como se indica en la Figura \ref{fig:L3F1}.
+\item Cree un instrumento virtual (\emph{.vi}) y realice lo siguiente:
+    \begin{itemize}
+        \item A partir de la máquina de estados creada en la Práctica 5, cree tres módulos:
+            \begin{itemize}
+                \item Un módulo que se encargue de la medición de temperatura, una de sus salidas debe ser un arreglo con las mediciones realizadas.  
+                \item Un módulo que se encargue de crear los archivos (\emph{.csv}) y guardar los datos en ellos. 
+                \item Un módulo que incluya la maquina de estados completa e internamente contenga los dos módulos anteriores.
+                \item Un módulo que configure la adquisición de datos.
+            \end{itemize}
+    \end{itemize}
 
-
-% \section{\pro}
-% \subsection{Montaje}
-% \begin{enumerate}
+\item Incluya en su informe lo siguiente:
+    \begin{itemize}
+        \item Una captura de pantalla de cada módulo 
+        \item Una captura de pantalla del panel frontal
+    \end{itemize}
     
-%     \item Inserte el sensor de luz CI-6504A en uno de los canales analógicos de la Interfaz 750 de \textit{PASCO}
-%     \item Seleccione la Interfaz \textit{ScienceWorkshop} 750 en configuración del hardware en PASCO Capstone, asegúrese de que el dispositivo esté encendido
-%     \item Haga click en el canal analógico donde está conectado el sensor de luz CI-6504A. Seguidamente seleccione \textit{Sensor de luz}.
-%     \item Configure el riel de baja fricción. Coloque el carrito de baja fricción y encima del carrito, coloque una lámina de madera. Seguidamente, ubique el sensor de luz, CI-6504A. Coloque dos laminas adicionales en el riel de baja fricción, y ubique el Diodo Láser sobre dichas laminas. \textbf{Recomendación:} puede fijar el sensor utilizando doble cinta. 
-%     \item Cree una tabla y un gráfico en el software \textit{Pasco Capstone}, para observar en tiempo real la recolección de los datos, con Intensidad de Luz en el eje de las ordenadas y Distancia en el eje de las abscisas. En este punto del procedimiento, el sistema recolector de datos deberá estar configurado en el modo de muestreo manual, con la entrada manual de datos. Titule la entrada manual de datos como “Distancia” con unidades de metros (m).
-%     \item Muestre la intensidad de luz en una pantalla digital (display) del software \textit{Pasco Capstone}.
-%     \item Si el sensor cuenta con rangos diferentes de ajustes, comience con el rango medio, accionando la perilla con la que cuenta el sensor en uno de los costados.
-%     \item Encienda la fuente de luz. \textbf{Nota:} Al conectar el diodo láser se deberá tener mucho cuidado con no apuntar a la cara de de otros miembros.
-%     \item Deslice el sensor de luz, sobre el riel de baja fricción, hacia adelante y atrás, para determinar el punto donde los valores de intensidad de luz comiencen a cambiar. Esta, va a ser la distancia mínima en la que el sensor de luz debe estar alejado de la fuente de luz. Usted puede necesitar cambiar la sensibilidad del sensor de luz, si obtiene una distancia mayor a los 50 cm desde la fuente de luz. \textbf{Recomendación}: Comience probando con una distancia inicial de separación de 20 cm entre el sensor y la fuente de luz.
-% \end{enumerate}
-
-% \subsection{Toma de datos}
-% \begin{enumerate}
-%     \item Inicie la recolección manual de datos. 
-%     \item En el punto e del apartado de Montaje se especificó la elaboración de un gráfico de Intensidad de Luz versus Distancia, el cual se debería estar observando en tiempo real.
-%     \item Registre el primer punto de datos muestreados manualmente y luego digite la distancia correspondiente, en metros, entre el Diodo laser y el elemento sensor en el sensor de luz. \textbf{Nota:} El elemento sensor de luz en el sensor de luz está justo detrás del extremo inferior del tubo negro en la parte frontal del sensor.
-%     \item Aleje el sensor de luz 2.0 cm de la fuente de luz y luego registre otro dato manualmente. Digite la distancia correspondiente, en metros, entre el Diodo laser y el elemento sensor en el sensor de luz.
-%     \item Repita el paso anterior hasta que se hayan recolectado al menos 10 datos distintos.
-% \end{enumerate}
-
-% \subsection{Análisis}
-% \begin{enumerate}
-%     \item Describa el gráfico obtenido durante la recolección de datos. Sea sintético en su descripción. Incluya observaciones tales como: ¿La intensidad aumentó o disminuyo conforme se alejaba el sensor de la fuente de luz, y el gráfico fue lineal o curvo? Si fue curvo, ¿cuál es la relación matemática que produce la forma del gráfico?
-%     \item Investigue sobre la Ley del cuadrado inverso. Deduzca la expresión matemática que ejemplifica la ley (la intensidad de la luz es inversamente proporcional al cuadrado de la distancia de la fuente de luz).
-%     \item Copie los datos obtenidos en la tabla efectuada anteriormente en un procesador matemático y cree dos nuevos sets de datos, para los inversos de la distancia: $\frac{1}{[Distancia(m)]}$ y $\frac{1}{[Distancia(m)]^2}$.
-%     \item De los datos generados anteriormente, realice los siguientes dos gráficos: uno con Intensidad de Luz en el eje de las ordenas y el inverso de la distancia, $\frac{1}{[Distancia(m)]}$, en el eje de las abscisas. Adicionalmente, con Intensidad de Luz en el eje de las ordenas y el inverso de la distancia al cuadrado, $\frac{1}{[Distancia(m)]^2}$, en el eje de las abscisas.
-%     \item ¿Alguno de los gráficos produce una línea recta? ¿Cuál es el significado de su respuesta?
-% \end{enumerate}
-
+\end{enumerate}
 
 %	BIBLIOGRAPHY
 %----------------------------------------------------------------------------------------
 
-\bibliographystyle{ieeetr}
+% \bibliographystyle{ieeetr}
 
-\bibliography{referencias}
+% \bibliography{referencias}
 
 %----------------------------------------------------------------------------------------
 

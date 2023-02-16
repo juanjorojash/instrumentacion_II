@@ -6,40 +6,69 @@
 \usepackage{csvsimple,booktabs}
 \pagestyle{fancy}
 \setlength{\headheight}{42pt}
-
+\usepackage{caption}
  
 \begin{document}
 \lhead{Ingeniería Física \\ Escuela de Física \\ Tecnológico de Costa Rica} 
-\rhead{Instrumentación I \\ Tarea \#3  \\ Entrega: Semana 8} 
+\rhead{Instrumentación II \\ Tarea \#3  \\ Entrega: Semana 7} 
 \cfoot{\thepage\ de \pageref{LastPage}}
 \setlength{\parindent}{0em}
 
-\noindent\textbf{Problema a resolver}
-\newline
-\newline
-Se desea crear un altímetro a partir de sensor de presión absoluta modelo:\href{https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=MS5803-02BA&DocType=Data+Sheet&DocLang=English}{MS5803-02BA} de TE Connectivity, un microcontrolador y una pantalla. Este sensor entrega un dato digital entre 1000 y 120000 que corresponde a 10mbar y 1200mbar respectivamente, es totalmente lineal. 
+El satélite BATSU-CS1, enviado por el TEC y ACAE al espacio en 2018 era un satélite pequeño tipo CubeSat sin un sistema de control activo, cuando no existe control activo los paneles solares son iluminados de forma cambiante debido a la rotación del satélite, en \href{https://estudianteccr-my.sharepoint.com/:x:/g/personal/prof_juan_rojas_estudiantec_cr/ETTDDKfo78RMnVB7k3jrQuIBsd2N6uON5U7eSBfSzcLbxw?e=nt5Cpk}{este} archivo se puede descargar una simulación del comportamiento de la batería del satélite en una orbita completa (alrededor de 90 minutos). La baterías consiste de dos celdas de iones de litio tipo NCR18650B de Panasonic (Ver Figura \ref{fig:18650}). 
 
-\vspace{0.5cm}
-\noindent\textbf{Requerimientos:}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{fig/NCR18650.jpeg}
+    \caption{Celda NCR18650B de Panasonic}
+    \label{fig:18650}
+\end{figure}
+
+Algunos términos importantes sobre baterías:
 \begin{itemize}
-    \item El sensor debe ser capaz de enviar un dato al controlador cada \SI{5}{\milli\second}
-    \item El controlador debe promediar las mediciones de presión recibidas y enviar un dato de altitud cada 5 segundos al usuario
-    \item La resolución debe ser menor a 0.04 \si{\milli bar}
-    \item El sensor solo será utilizado en altitudes menores a los 2000 msnm
+    \item Capacidad nominal [$Q$]: es la cantidad de carga que una celda o batería puede entregar en amperios-hora (\si{\ampere\hour}).
+    \item Eficiencia de Coulumb [$\eta$]: es la eficiencia con la que se transfiere la carga a una batería, tipicamente se asume que $\eta = 1$ durante la descarga y que $\eta < 1$ durante la carga. 
+    \item SOC [$z(t)$]: \emph{state of charge}, estado de carga de una celda o batería, para una celda o batería descargada $z(t) = 0$, mientras que para una celda o batería cargada $z(t) = 1$. El estado de carga se puede relacionar con la corriente por medio de la siguiente ecuación:
+        \begin{equation*}
+            z(t) = z(t_0) - \dfrac{1}{Q}\int_{t_0}^t \eta i(\tau) d\tau
+        \end{equation*}
+    La ecuación anterior se puede calcular a partir de datos discretos aproximando la integral que describe $z(t)$ por medio de una discretización con un intervalo $\Delta t$, esto es: 
+        \begin{equation*}
+            z[k+1] = z[k] - \dfrac{\eta \Delta t}{Q}i[k]
+        \end{equation*}
+    donde $\Delta t$ es el intervalo de integración discreta, en este caso $\SI{1}{\second}$; $z[k]$ e $i[k]$ son los valores actuales del SOC y la corriente respectivamente; y $z[k+1]$ es el valor siguiente del SOC
 \end{itemize}
 
-\noindent\textbf{Respoda lo siguiente:}
+Algunos detalles importantes sobre la batería del CubeSat simulado:
+\begin{itemize}
+    \item La capacidad $Q$ es de \SI{6500}{\milli\ampere\hour}
+    \item La eficiencia en descarga $\eta_d = 1$ y la eficiencia en carga es $\eta_d = 0.95$
+    \item El estado de carga inicial $z(t_0)=0.4$ 
+\end{itemize}
 
-\begin{enumerate}
-    \item Según lo visto en clase y la información disponible en la hoja de datos. ¿Que tipo de sensor es este?
-    \item Seleccione la relación de sobremuestreo y el rango de operación del sensor en base a los requerimientos e indíquelo en una tabla.
-    \item Realice una tabla resumen con las siguientes características del sensor para la relación de sobremuestreo y rango seleccionados
-    \begin{itemize}
-        \item Rango
-        \item Tiempo de respuesta
-        \item Resolución
-        \item Exactitud
-    \end{itemize}
-    \item Se tienen un grupo de mediciones del sensor de presión promediadas cada 5 segundos la cuales corresponden a un viaje en automóvil que se realizó desde Cartago centro a Tobosi de Cartago, ida y vuelta. Los datos se pueden descargar \href{https://estudianteccr-my.sharepoint.com/:u:/g/personal/prof_juan_rojas_estudiantec_cr/ES5u-pJPlFNBnMxKUXgPvi0B6mYtfNTDfYd4Du76JagNqA?e=5g6mPB}{aquí}. Investigue como calcular la altitud a partir de estos datos, calcúlela y genere una gráfica que relacione el tiempo en minutos con la altitud. 
-\end{enumerate}
+Algunos detalles importantes sobre las columnas del archivo:
+\begin{itemize}
+    \item La columna \emph{time} es el tiempo en segundos
+    \item La columna \emph{current} es la corriente en amperios, cuando es negativa la batería se esta cargando, cuando es positiva la batería se esta descargando
+    \item La columna \emph{voltage} es el voltaje en voltios
+    \item La columna \emph{power} es la potencia en vatios
+\end{itemize}
+
+Usando LabVIEW desarrolle un instrumento virtual que realice lo siguiente:
+
+\begin{itemize}
+    \item Que lea el archivo facilitado usando una estructura adecuada, se recomienda el uso de indexación
+    \item Que calcule el estado de carga $z(t)$ para todo tiempo en la columna \emph{time}
+    \item Que detenga la ejecución de la estructura cuando se terminen los datos del archivo
+    \item Que guarde todos los datos incluyendo la nueva columna \emph{soc} en un arreglo al terminar la ejecución
+    \item Que guarde el arreglo generado en el archivo \verb+t3_out.csv+
+    \item Guarde el instrumento virtual \verb+t3.vi+
+    \item Incluya ambos archivos en un archivo comprimido \verb+t3.zip+ y subalo al TecDigital
+\end{itemize}
+
+Cualquier entrega tardía se califica en base a 70. 
+
+
+% \bibliographystyle{IEEEtran}
+% \bibliography{ref_tareas}
+
 \end{document}

@@ -6,48 +6,33 @@
 \usepackage{csvsimple,booktabs}
 \pagestyle{fancy}
 \setlength{\headheight}{42pt}
-
+\usepackage{caption}
  
 \begin{document}
 \lhead{Ingeniería Física \\ Escuela de Física \\ Tecnológico de Costa Rica} 
-\rhead{Instrumentación I \\ Tarea \#5  \\ Entrega: Semana 13} 
+\rhead{Instrumentación II \\ Tarea \#5  \\ Entrega: Semana 15} 
 \cfoot{\thepage\ de \pageref{LastPage}}
 \setlength{\parindent}{0em}
 
-\noindent\textbf{Instrucciones}
+Investigue lo siguiente
+
 \begin{itemize}
-    \item Instale la aplicación Arduino Science Journal en su teléfono móvil
-    \item Configure una toma de datos de los tres acelerometros ($x,y,z$), donde $z$ es el eje perpendicular al plano de la mesa. 
-    \item Inicie la toma de datos y coloque su teléfono en una mesa plana por un par de segundos para registrar las aceleraciones iniciales, inmediatamente dibuje con su teléfono tres círculos completos sin rotar su teléfono ni levantarlo, vuelva la posición original y espere un par de segundos, finalice la toma de datos
-    \item Exporte los valores registrados en un archivo \emph{.csv}
-    \item Usando la librería \emph{pandas} en Python lea los datos del archivo .csv y limpie los datos de forma que pueda realizar el siguiente paso.   
-    \item Determine la velocidad y la posición del teléfono utilizando los datos discretos de aceleración tomados. Utilice la regla del trapecio para realizar la integración numérica de los datos de aceleración.
-    \item A pesar que el teléfono esta sobre una mesa y no se mueve, el acelerómetro del eje $z$ va a registrar una aceleración de aproximadamente \SI{9.8}{\meter\second\squared}, investigue porque esto es así y repórtelo. Tomando en cuenta lo investigado decida como corregir esto para obtener un resultado realista de la velocidad y la posición del teléfono en el eje $z$
-    \item A pesar de que la mesa parece ser plana, cualquier leve inclinación va a producir errores que se van a acumular en cada medición, investigue sobre esto y concluya cuales son las razones por las que la trayectoria calculada no es igual a la trayectoria real que siguió el teléfono en la mesa.
+    \item ¿Que es SCPI?
+    \item ¿Cuales protocolos de comunicación se usan para enviar los comandos?
+    \item ¿Que codificación se utiliza para enviar los comandos?
 \end{itemize}
 
-
-\noindent\textbf{Entregable}
-
-Un solo archivo .zip que contenga lo siguiente
+Suponga que esta conectado a una fuente \href{https://www.rigol-uk.co.uk/jg/wp-content/uploads/2021/08/Rigol-DP800-Power-Supply-Manual.pdf}{RIGOL DP811A} por medio de USB, usando el \href{https://www.batronix.com/pdf/Rigol/ProgrammingGuide/DP800_ProgrammingGuide_EN.pdf}{Manual de Programación} indique la cadena de caracteres ASCII que se debe enviar para realizar los siguiente (tome en cuenta que la fuente elegida solo tiene 1 canal):
 \begin{itemize}
-    \item Un archivo \emph{.py} que incluya comentarios aclaratorios de los pasos que se realizaron y tres gráficas, una para aceleración que incluya los tres ejes, una para velocidad que incluya los tres ejes y una de posición $x$ vrs $y$
-    \item Un archivo \emph{.pdf} donde se analicen los datos obtenidos.
-    \item Un archivo \emph{.csv} con los datos de los sensores
+    \item Configurar la fuente en voltaje de \SI{4.1}{\volt} y corriente de \SI{1.5}{\volt}
+    \item Prender el canal
+    \item Medir el voltaje
+    \item Medir la corriente
+    \item Apagar el canal
 \end{itemize}
 
-\noindent\textbf{Tips}
-\begin{itemize}
-    \item Limpiar se refiere a quitar valores no numéricos (NaN), quitar datos que no aportan al análisis como los primeros o los últimos segundos, convertir el tiempo a un valor en segundos iniciando en cero, etc.
-    \item Cinemática calculada para un instante $k$ basado en los datos del instante anterior $k-1$
-    \begin{equation*}
-        v[k] = v[k-1] + \left(\dfrac{a[k]+a[k+1]}{2}\right)(t[k] - t[k-1])
-    \end{equation*}
-    
-    \begin{equation*}
-        x[k] = x[k-1] + \left(\dfrac{v[k]+v[k+1]}{2}\right)(t[k] - t[k-1])
-    \end{equation*}
-\end{itemize}
+Cualquier entrega tardía se califica en base a 70. 
+
 
 % \bibliographystyle{IEEEtran}
 % \bibliography{ref_tareas}

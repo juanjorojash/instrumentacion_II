@@ -1,0 +1,64 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Bruno}
+\input{comunes/preamble}
+\title{Instrumentación II: \\ \emph{Adquisición de}\\ \emph{datos}}
+\author{Juan J. Rojas}
+\institute{Instituto Tecnológico de Costa Rica}
+\date{\today}
+\background{fig/comunes/background.jpg}
+\begin{document}
+\input{comunes/postamble}
+\maketitle
+
+\newcommand{\blackandwhite}{white} %change this at the end
+
+\begin{frame}{Sistema de adquisición de datos}
+\begin{center}
+    \includegraphics[width=0.93\linewidth]{presentaciones/fig/daq.png}
+\end{center}
+\end{frame}
+
+\begin{frame}{Señales}
+\begin{center}
+    \includegraphics[width=0.8\linewidth]{presentaciones/fig/analogico_digital.png}
+\end{center}
+\end{frame}
+
+\begin{frame}{Etapas de la conversión A/D}
+\begin{center}
+    \includegraphics[width=0.93\linewidth]{presentaciones/fig/detalleDAQ.png}
+\end{center}
+\end{frame}
+
+\begin{frame}{Muestreo, cuantización y codificación}
+\begin{center}
+    \includegraphics[width=0.9\linewidth]{presentaciones/fig/muestreo.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}{Ejemplo: aproximación sucesiva}
+\begin{center}
+    \includegraphics[width=0.5\linewidth]{presentaciones/fig/SAR.png}
+\end{center}
+\end{frame}
+
+\begin{frame}{Ejemplo: aproximación sucesiva}
+    \begin{minipage}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{presentaciones/fig/curve4bit.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{presentaciones/fig/ADCtime.png}
+    \end{minipage}
+\end{frame}
+
+% \begin{frame}{Referencias}
+
+% \bibliographystyle{ieeetr}
+% \footnotesize
+% \bibliography{comunes/referencias}
+
+%\end{frame}
+
+\end{document}
