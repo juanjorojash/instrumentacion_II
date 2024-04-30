@@ -36,6 +36,46 @@
 \end{center}
 \end{frame}
 
+\begin{frame}{Muestreo}
+    \begin{columns}
+    \begin{column}{0.4\textwidth}
+        \centering
+        Frecuencia de Nyquist
+        \begin{equation*}
+            f_N \geq 2\cdot f_{max} 
+        \end{equation*}
+        una frecuencia de muestreo muy baja puede causar una reconstrucción inexacta de la forma de onda
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \begin{center}
+            \includegraphics[width=0.9\linewidth]{presentaciones/fig/sampling.png}  
+        \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Cuantización}
+    \begin{columns}
+    \begin{column}{0.4\textwidth}
+        \centering
+        Resolución
+        \begin{equation*}
+            \Delta = \dfrac{\mathrm{Rango}}{2^b-1} 
+        \end{equation*}
+        Error de cuantización
+        \begin{equation*}
+            |e_q| \leq \dfrac{\Delta}{2} 
+        \end{equation*}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+        \begin{center}
+            \includegraphics[width=0.8\linewidth]{presentaciones/fig/resolution.png}  
+        \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+
 \begin{frame}{Ejemplo: aproximación sucesiva}
 \begin{center}
     \includegraphics[width=0.5\linewidth]{presentaciones/fig/SAR.png}
