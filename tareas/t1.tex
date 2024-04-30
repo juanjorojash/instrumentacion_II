@@ -17,19 +17,24 @@
 Usando un Notebook de \href{https://colab.research.google.com/}{Google Colab} realice lo siguiente:
 
 \begin{itemize}
-    \item Replique el algoritmo mostrado en la Figura \ref{fig:while} usando Python. Use como valor de \emph{\# de grupo} el numero correspondiente a su grupo.
+    \item Lea el archivo \href{https://estudianteccr-my.sharepoint.com/:u:/g/personal/prof_juan_rojas_estudiantec_cr/EcuXJs2cG21HnH02L5fq5OMBOoznw5P7fMkWscsfJdJjgQ?e=8s1NAe}{adc.csv} que contiene los datos mostrados en la siguiente gráfica.
     \begin{figure}[H]
         \centering
-        \includegraphics[width=10cm]{fig/t1.1.png}
+        \begin{tikzpicture}
+            \begin{axis}
+            \addplot table [x=t, y=s, col sep=comma, mark=none] {data/adc.csv};
+            \end{axis}
+        \end{tikzpicture}
         \caption{}
-        \label{fig:while}
+        \label{fig:signal}
     \end{figure}
-    \item Imprima el valor de $x$, $y$ e $iter$ en la terminal una vez terminada la ejecución del bucle While
-    \item Descarge el Notebook (.ipynb) y subalo al TecDigital
+    \item Tomando en cuenta la teoría vista en clase, realice la cuantización y codificación de esta señal usando una implementación propia de \emph{Successive Approximation Register} (SAR) con resolución de 2bits y otra con 4 bits. El rango es de 0 a 5\si{V}
+    \item Grafique la señal original y sus dos cuantizaciones en la misma gráfica.
+    \item Calcule el error de cuantización $e_q$ en ambos casos
+    \item Suba un enlace a su archivo de Colab
 \end{itemize}
 
 Cualquier entrega tardía se califica en base a 70. 
-
 
 % \bibliographystyle{IEEEtran}
 % \bibliography{ref_tareas}
