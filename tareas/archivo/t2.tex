@@ -1,0 +1,40 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry} 
+\input{comunes/preamble}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{csvsimple,booktabs}
+\pagestyle{fancy}
+\setlength{\headheight}{42pt}
+\usepackage{caption}
+ 
+\begin{document}
+\lhead{Ingeniería Física \\ Escuela de Física \\ Tecnológico de Costa Rica} 
+\rhead{Instrumentación II \\ Tarea \#2  \\ Entrega: Semana 5} 
+\cfoot{\thepage\ de \pageref{LastPage}}
+\setlength{\parindent}{0em}
+
+El instrumento virtual mostrado en la Figura \ref{fig:for} es utilizado para leer un archivo de texto de 10 filas con 10 números binarios de cuatro bits por fila y convertirlos en un arreglo de 10 $\times$ 10 de enteros positivos de 8 bits (U8).
+
+Usando LabVIEW realice lo siguiente:
+
+\begin{itemize}
+    \item Modifique el instrumento virtual de forma que pueda leer cualquier archivo de $N$ filas y $M$ números binarios de cuatro bits por fila, pruébelo usando \href{https://estudianteccr-my.sharepoint.com/:t:/g/personal/prof_juan_rojas_estudiantec_cr/EWLG3s0M7z9Gko9Haiys4CMBQu678gMBLzkhAnj8cZglHQ?e=ke8ZPG}{este} archivo de 15 filas y 20 números binarios de 4 bits por fila. Además realice al menos una mejora sustantiva que haga que la solución utilice menos bloques.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=15cm]{fig/t2.1.png}
+        \caption{}
+        \label{fig:for}
+    \end{figure}
+    \item Genere el archivo \verb+t2_out_text.csv+
+    \item Guarde el instrumento virtual \verb+t2.vi+
+    \item Incluya ambos archivos en un archivo comprimido \verb+t2.zip+ y subalo al TecDigital
+\end{itemize}
+
+Cualquier entrega tardía se califica en base a 70. 
+
+
+% \bibliographystyle{IEEEtran}
+% \bibliography{ref_tareas}
+
+\end{document}

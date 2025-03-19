@@ -28,8 +28,9 @@ Usando un Notebook de \href{https://colab.research.google.com/}{Google Colab} re
         \caption{}
         \label{fig:signal}
     \end{figure}
-    \item Tomando en cuenta la teoría vista en clase, realice la cuantización y codificación de esta señal usando una implementación propia de \emph{Successive Approximation Register} (SAR) con resolución de 2bits y otra con 4 bits. El rango es de 0 a 5\si{V}
-    \item Grafique la señal original y sus dos cuantizaciones en la misma gráfica.
+    \item Cree una función que sea una implementación propia de \emph{Successive Approximation Register} (SAR) que tenga como parámetros la resolución en bits \emph{res}, el voltaje de referencia \emph{vref}, el voltaje de entrada \emph{vin} y un booleano de impresión \emph{pr} que en caso de ser verdadero la función imprima los pasos intermedios de la aproximación.
+    \item Realice la cuantización y codificación de la señal de la \ref{fig:signal} usando la función creada. El voltaje de refencia es 5\si{V}
+    \item Grafique la señal original y sus cuantizaciones a 4bits y 8bits en la misma gráfica.
     \item Calcule el error de cuantización $e_q$ en ambos casos
     \item Suba un enlace a su archivo de Colab
 \end{itemize}
